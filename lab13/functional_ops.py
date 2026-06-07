@@ -1,90 +1,76 @@
 """
-Prelucrare HashMap cu funcții de nivel superior.
-
-Tema 1: aplică transformări unui dict folosind EXCLUSIV
-funcții de nivel superior (lambda, map, filter, reduce).
-NU se folosesc bucle for/while.
-
-Logica transformărilor:
-1. Elimină elementele prime (indiferent dacă sunt pare sau impare)
-2. Transformă elementele impare non-prime în pare (înmulțire cu 2)
-3. Elementele pare non-prime rămân neschimbate
+Operații funcționale pe HashMap — exclusiv map, filter, lambda, dict comprehension.
+Fără bucle for/while explicite.
 """
 
-from functools import reduce
+from __future__ import annotations
+from math import isqrt
 
 
-# TODO: Implementează funcția is_prime
+# ─── Funcții auxiliare ────────────────────────────────────────────────────────
+
 def is_prime(n: int) -> bool:
-    """Verifică dacă un număr este prim.
-
-    Un număr este prim dacă este mai mare decât 1 și are exact 2 divizori: 1 și el însuși.
-
-    Args:
-        n: Numărul de verificat.
-
-    Returns:
-        True dacă n este prim, False altfel.
-
-    Exemple:
-        is_prime(2) == True
-        is_prime(3) == True
-        is_prime(4) == False
-        is_prime(1) == False
-        is_prime(0) == False
     """
-    raise NotImplementedError("De implementat")
+    Returnează True dacă n este număr prim.
+
+    is_prime(1)  == False
+    is_prime(2)  == True
+    is_prime(3)  == True
+    is_prime(4)  == False
+    is_prime(7)  == True
+    is_prime(9)  == False
+    is_prime(49) == False
+    """
+    if n < 2:
+        return False
+    if n == 2:
+        return True
+    if n % 2 == 0:
+        return False
+    # Verificăm divizori impari până la √n
+    return all(n % i != 0 for i in range(3, isqrt(n) + 1, 2))
 
 
-# TODO: Implementează funcția make_even
 def make_even(n: int) -> int:
-    """Transformă un număr impar în par prin înmulțire cu 2.
-
-    Dacă numărul este deja par, îl returnează neschimbat.
-
-    Args:
-        n: Numărul de transformat.
-
-    Returns:
-        n * 2 dacă n este impar, altfel n.
-
-    Exemple:
-        make_even(3) == 6
-        make_even(4) == 4
-        make_even(7) == 14
     """
-    raise NotImplementedError("De implementat")
+    Dacă n este impar → returnează n × 2.
+    Dacă n este par   → returnează n neschimbat.
+
+    make_even(3) == 6
+    make_even(4) == 4
+    make_even(9) == 18
+    """
+    return n * 2 if n % 2 != 0 else n
 
 
-# TODO: Implementează funcția process_hashmap
+# ─── Prelucrare HashMap ───────────────────────────────────────────────────────
+
 def process_hashmap(data: dict[str, int]) -> dict[str, int]:
-    """Aplică transformările dict-ului folosind funcții de nivel superior.
-
-    Transformări aplicate:
-    1. Elimină perechile unde valoarea este număr prim
-    2. Transformă valorile impare (non-prime) în pare (× 2)
-    3. Valorile pare non-prime rămân neschimbate
-
-    IMPORTANT: Implementarea NU trebuie să conțină bucle for/while.
-    Folosește exclusiv: map, filter, lambda, dict comprehension, reduce.
-
-    Args:
-        data: Dict-ul de procesat {cheie: valoare_int}.
-
-    Returns:
-        Dict nou cu transformările aplicate.
-
-    Exemple:
-        process_hashmap({'a': 4, 'b': 7, 'c': 5})
-        # 4 par non-prim → rămâne 4
-        # 7 impar non-prim → devine 14
-        # 5 prim → eliminat
-        # Rezultat: {'a': 4, 'b': 14}
-
-        process_hashmap({'x': 3, 'y': 6, 'z': 11})
-        # 3 prim → eliminat
-        # 6 par non-prim → rămâne 6
-        # 11 prim → eliminat
-        # Rezultat: {'y': 6}
     """
-    raise NotImplementedError("De implementat")
+    Aplică simultan două transformări pe valorile dict-ului:
+
+      1. Elimină perechile cu valori prime.
+      2. Dublează valorile impare non-prime (cu make_even).
+
+    Implementare EXCLUSIV funcțională: filter + dict comprehension + lambda.
+
+    Tabel de referință:
+      Valoare | Prim? | Impar? | Rezultat
+        2     |  DA   |  DA    | eliminat
+        4     |  NU   |  NU    | 4 (nemodificat)
+        9     |  NU   |  DA    | 18 (dublat)
+       49     |  NU   |  DA    | 98 (dublat)
+        5     |  DA   |  DA    | eliminat
+
+    Exemplu:
+        process_hashmap({'a': 4, 'c': 5, 'd': 9})
+        # 4  non-prim par → 4
+        # 5  prim → eliminat
+        # 9  non-prim impar → 18
+        # → {'a': 4, 'd': 18}
+    """
+    # Pas 1: filtrăm perechile cu valori NON-prime
+    non_prime_items = filter(lambda kv: not is_prime(kv[1]), data.items())
+
+    # Pas 2: aplicăm make_even pe fiecare valoare non-primă
+    return {k: make_even(v) for k, v in non_prime_items}
